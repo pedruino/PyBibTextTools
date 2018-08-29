@@ -13,31 +13,32 @@ import unidecode
 from shutil import copyfile
 import tempfile
 
-#=============================================================
+
+# =============================================================
 def TypePaperSelect(type_tmp):
     typePaper = 'InProceedings'
-    if (type_tmp=='Article'):
+    if (type_tmp == 'Article'):
         typePaper = 'article'
-    elif (type_tmp=='Chapter'):
+    elif (type_tmp == 'Chapter'):
         typePaper = 'InProceedings'
     return type_tmp
 
-#=============================================================
-def AuthorFix(author_tmp):
 
-    #problems with spring CSV
-    
+# =============================================================
+def AuthorFix(author_tmp):
+    # problems with spring CSV
+
     # "Sergey Ablameyko PhD, DSc, Prof, FIEE, FIAPR, SMIEEETony Pridmore BSc, PhD"
     # correct is
     # "Sergey Ablameyko and Tony Pridmore"
-    author_tmp = author_tmp.replace(","," ")
-    author_tmp = author_tmp.replace("PhD","")
-    author_tmp = author_tmp.replace("DSc","")
-    author_tmp = author_tmp.replace("Prof","")
-    author_tmp = author_tmp.replace("FIEE","")
-    author_tmp = author_tmp.replace("FIAPR","")
-    author_tmp = author_tmp.replace("SMIEEE","")
-    author_tmp = author_tmp.replace("  "," ")
+    author_tmp = author_tmp.replace(",", " ")
+    author_tmp = author_tmp.replace("PhD", "")
+    author_tmp = author_tmp.replace("DSc", "")
+    author_tmp = author_tmp.replace("Prof", "")
+    author_tmp = author_tmp.replace("FIEE", "")
+    author_tmp = author_tmp.replace("FIAPR", "")
+    author_tmp = author_tmp.replace("SMIEEE", "")
+    author_tmp = author_tmp.replace("  ", " ")
 
     # "Yingying ZhuCong YaoXiang Bai"
     # correct is
@@ -53,20 +54,19 @@ def AuthorFix(author_tmp):
 
     return author
 
-#=============================================================
-def run(csvFileName, bibFileName):
 
+# =============================================================
+def run(csvFileName, bibFileName):
     if not os.path.isfile(csvFileName):
-        print("File not found: ",csvFileName)
+        print("File not found: ", csvFileName)
         return
 
     # I dont kown Why, but dont work complex path in Panda, then I copy file to local path
     tmpFile = tempfile.mktemp()
-    copyfile(csvFileName,tmpFile)
+    copyfile(csvFileName, tmpFile)
 
-    colnames = ['title','journal','book','volume','issue','doi','author','year','url','type']
-    pn = pd.read_csv(tmpFile, names=colnames, skiprows=1) 
-
+    colnames = ['title', 'journal', 'book', 'volume', 'issue', 'doi', 'author', 'year', 'url', 'type']
+    pn = pd.read_csv(tmpFile, names=colnames, skiprows=1)
 
     bibData = BibliographyData()
     total = 0
@@ -95,21 +95,22 @@ def run(csvFileName, bibFileName):
         keyPaper = row.doi
         typePaper = TypePaperSelect(row.type)
 
-        print("Chave "+keyPaper+"               \r", end="", flush=True)
+        print("Chave " + keyPaper + "               \r", end="", flush=True)
 
         if (pd.isnull(row.author)):
             notAuthor = notAuthor + 1
         else:
             bibData.entries[keyPaper] = Entry(typePaper, fields)
 
-    print("Processed ",total,"                             ")
+    print("Processed ", total, "                             ")
     print("Removed without author ", notAuthor)
-    print("Total Final",len(bibData.entries))
+    print("Total Final", len(bibData.entries))
 
     bibData.to_file(bibFileName)
-    print("Saved file ",bibFileName)
+    print("Saved file ", bibFileName)
 
-#=============================================================================
+
+# =============================================================================
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--csvFileName", required=True, help="CSV file name")
